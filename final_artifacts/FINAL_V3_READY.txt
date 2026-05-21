@@ -1,0 +1,6 @@
+ready_at=2026-05-21 00:58:00
+root=/home/ubuntu/spiking_mappo_official
+summary=/home/ubuntu/spiking_mappo_official/results_summary_linux_4090_v3_final.csv
+plots=/home/ubuntu/spiking_mappo_official/plots_linux_4090_v3_final
+v3_count=45
+archive=/home/ubuntu/spiking_mappo_official/final_artifacts/spiking_mappo_4090_v3_final_20260521_005800.tar.gz

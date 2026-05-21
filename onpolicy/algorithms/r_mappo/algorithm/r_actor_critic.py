@@ -3,6 +3,7 @@ import torch.nn as nn
 from onpolicy.algorithms.utils.util import init, check
 from onpolicy.algorithms.utils.cnn import CNNBase
 from onpolicy.algorithms.utils.mlp import MLPBase
+from onpolicy.algorithms.utils.spiking_mlp import SpikingMLPBase
 from onpolicy.algorithms.utils.rnn import RNNLayer
 from onpolicy.algorithms.utils.act import ACTLayer
 from onpolicy.algorithms.utils.popart import PopArt
@@ -30,8 +31,16 @@ class R_Actor(nn.Module):
         self.tpdv = dict(dtype=torch.float32, device=device)
 
         obs_shape = get_shape_from_obs_space(obs_space)
-        base = CNNBase if len(obs_shape) == 3 else MLPBase
-        self.base = base(args, obs_shape)
+        self.actor_arch = getattr(args, "actor_arch", "ann")
+        if self.actor_arch == "ann":
+            base = CNNBase if len(obs_shape) == 3 else MLPBase
+            self.base = base(args, obs_shape)
+        elif self.actor_arch in ("snn_lif", "snn_at"):
+            self.base = SpikingMLPBase(
+                args, obs_shape, adaptive_threshold=self.actor_arch == "snn_at"
+            )
+        else:
+            raise ValueError("Unsupported actor_arch: {}".format(self.actor_arch))
 
         if self._use_naive_recurrent_policy or self._use_recurrent_policy:
             self.rnn = RNNLayer(self.hidden_size, self.hidden_size, self._recurrent_N, self._use_orthogonal)

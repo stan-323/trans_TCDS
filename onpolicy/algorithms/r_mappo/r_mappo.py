@@ -5,6 +5,22 @@ from onpolicy.utils.util import get_gard_norm, huber_loss, mse_loss
 from onpolicy.utils.valuenorm import ValueNorm
 from onpolicy.algorithms.utils.util import check
 
+
+def collect_actor_spike_stats(policy):
+    actor_base = getattr(getattr(policy, "actor", None), "base", None)
+    if actor_base is None or not hasattr(actor_base, "get_spike_stats"):
+        return {}
+
+    spike_stats = actor_base.get_spike_stats()
+    prefixed_stats = {}
+    for key, value in spike_stats.items():
+        if isinstance(value, bool):
+            continue
+        if isinstance(value, (int, float)):
+            prefixed_stats[f"spike_stats/{key}"] = float(value)
+    return prefixed_stats
+
+
 class R_MAPPO():
     """
     Trainer class for MAPPO to update policies.
@@ -39,6 +55,7 @@ class R_MAPPO():
         self._use_valuenorm = args.use_valuenorm
         self._use_value_active_masks = args.use_value_active_masks
         self._use_policy_active_masks = args.use_policy_active_masks
+        self._log_spike_stats = getattr(args, "log_spike_stats", False)
         
         assert (self._use_popart and self._use_valuenorm) == False, ("self._use_popart and self._use_valuenorm can not be set True simultaneously")
         
@@ -220,6 +237,9 @@ class R_MAPPO():
 
         for k in train_info.keys():
             train_info[k] /= num_updates
+
+        if self._log_spike_stats:
+            train_info.update(collect_actor_spike_stats(self.policy))
  
         return train_info
 

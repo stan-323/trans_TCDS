@@ -210,6 +210,19 @@ def get_config():
                         help="Whether to use Orthogonal initialization for weights and 0 initialization for biases")
     parser.add_argument("--gain", type=float, default=0.01,
                         help="The gain # of last action layer")
+    parser.add_argument("--actor_arch", type=str, default="ann",
+                        choices=["ann", "snn_lif", "snn_at"],
+                        help="Actor feature extractor architecture")
+    parser.add_argument("--snn_time_steps", type=int, default=16,
+                        help="Number of SNN simulation steps for spiking actors")
+    parser.add_argument("--snn_decay", type=float, default=0.5,
+                        help="LIF membrane decay for spiking actors")
+    parser.add_argument("--snn_threshold", type=float, default=1.0,
+                        help="Base firing threshold for spiking actors")
+    parser.add_argument("--snn_threshold_beta", type=float, default=0.1,
+                        help="Adaptive threshold membrane activity coefficient")
+    parser.add_argument("--log_spike_stats", action='store_true', default=False,
+                        help="Expose spike statistics on spiking actor bases")
 
     # recurrent parameters
     parser.add_argument("--use_naive_recurrent_policy", action='store_true',
